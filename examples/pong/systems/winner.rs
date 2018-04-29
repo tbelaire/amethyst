@@ -1,4 +1,5 @@
-use {Ball, ScoreBoard};
+use {Ball, ScoreBoard, Serve, Side};
+use std::time::Duration;
 use amethyst::assets::AssetStorage;
 use amethyst::audio::Source;
 use amethyst::audio::output::Output;
@@ -18,6 +19,7 @@ impl<'s> System<'s> for WinnerSystem {
         WriteStorage<'s, Transform>,
         WriteStorage<'s, UiText>,
         Write<'s, ScoreBoard>,
+        Write<'s, Serve>,
         Read<'s, AssetStorage<Source>>,
         ReadExpect<'s, Sounds>,
         ReadExpect<'s, ScoreText>,
@@ -31,6 +33,7 @@ impl<'s> System<'s> for WinnerSystem {
             mut transforms,
             mut text,
             mut score_board,
+            mut serve,
             storage,
             sounds,
             score_text,
@@ -38,32 +41,46 @@ impl<'s> System<'s> for WinnerSystem {
         ): Self::SystemData,
     ) {
         for (ball, transform) in (&mut balls, &mut transforms).join() {
-            use ARENA_WIDTH;
+            use {ARENA_WIDTH, BALL_VELOCITY_X, BALL_VELOCITY_Y};
+            if serve.stopwatch.elapsed() > Duration::new(2, 0) {
+                ball.velocity[0] = BALL_VELOCITY_X;
+                ball.velocity[1] = BALL_VELOCITY_Y;
+
+                if serve.serve_to == Side::Left{
+                    ball.velocity[0] = -ball.velocity[0];
+                }
+                serve.stopwatch.reset();
+            }
 
             let ball_x = transform.translation[0];
 
-            let did_hit = if ball_x <= ball.radius {
+            let hit_side = if ball_x <= ball.radius {
                 // Right player scored on the left side.
                 score_board.score_right += 1;
                 if let Some(text) = text.get_mut(score_text.p2_score) {
                     text.text = score_board.score_right.to_string();
                 }
-                true
+                Some(Side::Right)
             } else if ball_x >= ARENA_WIDTH - ball.radius {
                 // Left player scored on the right side.
                 score_board.score_left += 1;
                 if let Some(text) = text.get_mut(score_text.p1_score) {
                     text.text = score_board.score_left.to_string();
                 }
-                true
+                Some(Side::Left)
             } else {
-                false
+                None
             };
 
-            if did_hit {
+            if let Some(hit_side) = hit_side {
                 // Reset the ball.
-                ball.velocity[0] = -ball.velocity[0];
+                ball.velocity[0] = 0.0;
+                ball.velocity[1] = 0.0;
                 transform.translation[0] = ARENA_WIDTH / 2.0;
+                transform.translation[1] = 2.0 * ball.radius;
+
+                serve.stopwatch.restart();
+                serve.serve_to = hit_side;
 
                 // Print the score board.
                 println!(
