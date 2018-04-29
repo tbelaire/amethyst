@@ -103,6 +103,15 @@ pub enum Side {
     Right,
 }
 
+impl Side {
+    pub fn x_direction(&self) -> f32 {
+        match *self {
+            Side::Left => -1.0,
+            Side::Right => 1.0,
+        }
+    }
+}
+
 pub struct Paddle {
     pub velocity: f32,
     pub side: Side,

@@ -43,12 +43,10 @@ impl<'s> System<'s> for WinnerSystem {
         for (ball, transform) in (&mut balls, &mut transforms).join() {
             use {ARENA_WIDTH, BALL_VELOCITY_X, BALL_VELOCITY_Y};
             if serve.stopwatch.elapsed() > Duration::new(2, 0) {
-                ball.velocity[0] = BALL_VELOCITY_X;
+                ball.velocity[0] = serve.serve_to.x_direction()
+                    * BALL_VELOCITY_X;
                 ball.velocity[1] = BALL_VELOCITY_Y;
 
-                if serve.serve_to == Side::Left{
-                    ball.velocity[0] = -ball.velocity[0];
-                }
                 serve.stopwatch.reset();
             }
 
