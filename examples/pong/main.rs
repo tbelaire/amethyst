@@ -32,6 +32,7 @@ const PADDLE_COLOUR: [f32; 4] = [0.0, 0.0, 1.0, 1.0];
 
 const BALL_VELOCITY_X: f32 = 75.0;
 const BALL_VELOCITY_Y: f32 = 50.0;
+const BALL_VELOCITY_GROWTH: f32 = 1.05;
 const BALL_RADIUS: f32 = 2.5;
 const BALL_COLOUR: [f32; 4] = [1.0, 0.0, 0.0, 1.0];
 
