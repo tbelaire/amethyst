@@ -1,4 +1,4 @@
-use {Ball, Paddle, Side};
+use {Ball, Paddle};
 use amethyst::assets::AssetStorage;
 use amethyst::audio::Source;
 use amethyst::audio::output::Output;
@@ -29,7 +29,7 @@ impl<'s> System<'s> for BounceSystem {
         // We also check for the velocity of the ball every time, to prevent multiple collisions
         // from occurring.
         for (ball, transform) in (&mut balls, &transforms).join() {
-            use ARENA_HEIGHT;
+            use {ARENA_HEIGHT, BALL_VELOCITY_GROWTH};
 
             let ball_x = transform.translation[0];
             let ball_y = transform.translation[1];
@@ -61,11 +61,11 @@ impl<'s> System<'s> for BounceSystem {
                     paddle_x + paddle.width + ball.radius,
                     paddle_y + paddle.height + ball.radius,
                 ) {
-                    if paddle.side == Side::Left && ball.velocity[0] < 0.0 {
-                        ball.velocity[0] = -ball.velocity[0];
-                        play_bounce(&*sounds, &storage, &*audio_output);
-                    } else if paddle.side == Side::Right && ball.velocity[0] > 0.0 {
-                        ball.velocity[0] = -ball.velocity[0];
+                    if ball.velocity[0] * paddle.side.x_direction() > 0.0 {
+                        ball.velocity[0] = -ball.velocity[0]
+                            * BALL_VELOCITY_GROWTH;
+                        ball.velocity[1] = ball.velocity[1]
+                            * BALL_VELOCITY_GROWTH;
                         play_bounce(&*sounds, &storage, &*audio_output);
                     }
                 }
