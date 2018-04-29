@@ -13,6 +13,7 @@ use amethyst::Result;
 use amethyst::audio::AudioBundle;
 use amethyst::core::frame_limiter::FrameRateLimitStrategy;
 use amethyst::core::transform::TransformBundle;
+use amethyst::core::timing::Stopwatch;
 use amethyst::ecs::prelude::{Component, DenseVecStorage};
 use amethyst::input::InputBundle;
 use amethyst::prelude::*;
@@ -136,5 +137,25 @@ impl ScoreBoard {
             score_left: 0,
             score_right: 0,
         }
+    }
+}
+
+pub struct Serve {
+    serve_to: Side,
+    stopwatch: Stopwatch,
+}
+
+impl Serve {
+    pub fn new(side: Side) -> Serve {
+        Serve {
+            serve_to: side,
+            stopwatch: Stopwatch::new(),
+        }
+    }
+}
+
+impl Default for Serve {
+    fn default() -> Serve {
+        Serve::new(Side::Left)
     }
 }
